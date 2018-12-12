@@ -54,12 +54,6 @@ inline static BOOL CGImageSourceContainsAnimatedGif(CGImageSourceRef imageSource
     return imageSource && UTTypeConformsTo(CGImageSourceGetType(imageSource), kUTTypeGIF) && CGImageSourceGetCount(imageSource) > 1;
 }
 
-inline static BOOL isRetinaFilePath(NSString *path)
-{
-    NSRange retinaSuffixRange = [[path lastPathComponent] rangeOfString:@"@2x" options:NSCaseInsensitiveSearch];
-    return retinaSuffixRange.length && retinaSuffixRange.location != NSNotFound;
-}
-
 @interface YLGIFImage ()
 
 @property (nonatomic, readwrite) NSMutableArray *images;
@@ -85,7 +79,7 @@ static NSUInteger _prefetchedNum = 10;
 
 + (id)imageNamed:(NSString *)name
 {
-    NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:nil];
+    NSString *path = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:name];
     
     return ([[NSFileManager defaultManager] fileExistsAtPath:path]) ? [self imageWithContentsOfFile:path] : nil;
 }
@@ -93,7 +87,7 @@ static NSUInteger _prefetchedNum = 10;
 + (id)imageWithContentsOfFile:(NSString *)path
 {
     return [self imageWithData:[NSData dataWithContentsOfFile:path]
-                         scale:isRetinaFilePath(path) ? 2.0f : 1.0f];
+                         scale:[UIScreen mainScreen].scale];
 }
 
 + (id)imageWithData:(NSData *)data
@@ -128,7 +122,7 @@ static NSUInteger _prefetchedNum = 10;
 - (id)initWithContentsOfFile:(NSString *)path
 {
     return [self initWithData:[NSData dataWithContentsOfFile:path]
-                        scale:isRetinaFilePath(path) ? 2.0f : 1.0f];
+                        scale:[UIScreen mainScreen].scale];
 }
 
 - (id)initWithData:(NSData *)data
